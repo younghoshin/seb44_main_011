@@ -22,6 +22,7 @@ jobs:
 
     - name: Build with Gradle
       run: |
+          cd server
           mkdir -p ./build/generated-snippets
           ./gradlew build
     
