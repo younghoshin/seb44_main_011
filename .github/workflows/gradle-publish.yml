@@ -27,10 +27,7 @@ jobs:
           mkdir -p ./build/generated-snippets
           ./gradlew build
     
-    - name: NPM Build
-      run: |
-         npm install
-         npm run build
+
 
     - name: Login to DockerHub
       uses: docker/login-action@v1
@@ -58,6 +55,18 @@ jobs:
           docker rm my-app || true
           docker run -d --name my-app -p 80:8080 ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
         EOF
+        
+
+  buildNpm:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3        
+    - name: NPM Build
+      run: |
+         npm install
+         npm run build
         
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
