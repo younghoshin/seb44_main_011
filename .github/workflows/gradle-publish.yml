@@ -52,6 +52,7 @@ jobs:
     - name: Deploy to AWS EC2
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
+          docker image prune -a
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
           docker stop my-app || true
           docker rm my-app || true
@@ -105,6 +106,7 @@ jobs:
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
+            docker image prune -a
             docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
             docker stop my-client-app|| true
             docker rm my-client-app || true
