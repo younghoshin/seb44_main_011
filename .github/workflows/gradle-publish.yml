@@ -55,28 +55,77 @@ jobs:
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
           docker stop my-app || true
           docker rm my-app || true
-          docker run -d --name my-app -p 80:8080 ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
+          docker run -d --name my-app -p 8080:8080 ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
         EOF
         
-
-  buildNpm:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+       node-version: [14.x, 16.x, 18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3        
-    - name: NPM Build
-      run: |
-         npm install
-         npm run build
-        
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: your-aws-region
-          
-    - name: Upload to S3
-      run: aws s3 sync ./build s3://your-s3-bucket-name/
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build --if-present
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: server/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
+          # ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy to AWS EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
+            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
+            docker stop my-client-app|| true
+            docker rm my-client-app || true
+            docker run -d --name my-client-app -p 80:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
+          EOF
+
+
+
+
+
+#  buildNpm:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - name: Checkout code
+#      uses: actions/checkout@v3
+#    - name: NPM Build
+#      run: |
+#         npm install
+#         npm run build
+#
+#    - name: Configure AWS Credentials
+#      uses: aws-actions/configure-aws-credentials@v1
+#      with:
+#        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#        aws-region: your-aws-region
+#
+#    - name: Upload to S3
+#      run: aws s3 sync ./build s3://your-s3-bucket-name/
 
