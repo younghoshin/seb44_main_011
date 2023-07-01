@@ -91,7 +91,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: client/Dockerfile_client
+          file: server/Dockerfile_client
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
           # ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
