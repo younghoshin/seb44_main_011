@@ -1,8 +1,25 @@
 FROM node:18
 # 경로 설정하기
+#WORKDIR /app
+#COPY ../client/package.json package.json
+#COPY ../client/package-lock.json package-lock.json
+#COPY . .
+#RUN npm install
+#CMD ["npm" ,"install","start"]
+# 애플리케이션을 위한 디렉토리를 생성합니다.
 WORKDIR /app
-COPY ../client/package.json package.json
-COPY ../client/package-lock.json package-lock.json
-COPY . .
+
+# 애플리케이션의 종속성들을 먼저 복사합니다.
+COPY client/package.json client/package-lock.json ./
+
+# 종속성 설치를 수행합니다.
 RUN npm install
-CMD ["npm" ,"install","start"]
+
+# 나머지 소스 코드들을 복사합니다.
+COPY client/ .
+
+# 애플리케이션을 빌드합니다.
+RUN npm run build
+
+# 애플리케이션을 실행합니다.
+CMD ["npm", "start"]
