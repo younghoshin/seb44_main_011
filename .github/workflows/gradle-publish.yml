@@ -57,6 +57,7 @@ jobs:
           docker rm my-app || true
           docker run -d --name my-app -p 8080:8080 ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
         EOF
+        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker system prune -a'
         
   build:
     runs-on: ubuntu-latest
@@ -110,6 +111,8 @@ jobs:
             docker rm my-client-app || true
             docker run -d --name my-client-app -p 80:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
           EOF
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker system prune -a'
+
 
 
 
