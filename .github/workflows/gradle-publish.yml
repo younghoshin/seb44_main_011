@@ -52,12 +52,8 @@ jobs:
     - name: Deploy to AWS EC2
       run: |
         ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
-          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
-          docker stop my-app || true
-          docker rm my-app || true
-          docker run -d --name my-app -p 8080:8080 ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
+          sh custom_sh/deploy-server-active.sh
         EOF
-        ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker system prune -af'
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -105,12 +101,8 @@ jobs:
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
-            docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
-            docker stop my-client-app|| true
-            docker rm my-client-app || true
-            docker run -d --name my-client-app -p 80:3000 ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
+            sh custom_sh/deploy-server-active.sh
           EOF
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} 'docker system prune -af'
 #  deploy:
 #    runs-on: ubuntu-latest
 #
