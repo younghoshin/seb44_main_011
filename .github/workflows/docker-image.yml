@@ -33,12 +33,17 @@ jobs:
           touch /home/runner/work/seb44_main_011/seb44_main_011/server/src/main/resources/application.yml
           echo "${{ secrets.SERVER_YML_DATA }}" > /home/runner/work/seb44_main_011/seb44_main_011/server/src/main/resources/application.yml
 
+
       - name: Build with Gradle
         run: |
           cd server
-          chmod 755 gradlew
+          chmod +x gradlew
           ./gradlew clean
           ./gradlew build
+
+
+
+
 
 
 
@@ -47,6 +52,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v2
@@ -61,7 +67,6 @@ jobs:
         uses: webfactory/ssh-agent@v0.5.3
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} <<EOF
@@ -72,8 +77,10 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x]
-          # 14.x, 16.x,
+        # 14.x, 16.x,
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+
 
     steps:
       - uses: actions/checkout@v3
@@ -105,6 +112,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/my-client-app:latest
           # ${{ secrets.DOCKER_HUB_USERNAME }}/my-app:latest
+
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.5.3
