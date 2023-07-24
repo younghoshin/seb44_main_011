@@ -5,9 +5,8 @@ import CustomAudioPlayer from "./CustomAudioPlayer";
 import Profile from "./commons/Profile";
 import Empty from "./Empty";
 import { ReactComponent as Liked } from "../assets/icons/liked.svg";
-import { ReactComponent as Disliked } from "../assets/icons/disliked.svg";
 import { ReactComponent as CommentIcon } from "../assets/icons/coment.svg";
-import { ReactComponent as LineComment } from "../assets/icons/linecomment.svg";
+import { ReactComponent as Reapeat } from "../assets/icons/repeat.svg";
 import CommentSection from "./CommentSection";
 
 const StyledPlayer = styled.div`
@@ -16,20 +15,18 @@ const StyledPlayer = styled.div`
   padding: 30px;
   align-items: center;
 `;
-const PlayerContainer = styled.div<{ $expanded?: string }>`
+const PlayerContainer = styled.div<{ $expanded?: boolean }>`
   width: 100%;
-  height: ${({ $expanded }) =>
-    $expanded === "true" ? "fit-content" : "300px"};
+  height: ${({ $expanded }) => ($expanded ? "fit-content" : "300px")};
   border-radius: 15px;
   position: relative;
   display: flex;
   flex-direction: column;
 `;
 
-const BackGroundContainer = styled.div<{ $expanded?: string }>`
+const BackGroundContainer = styled.div<{ $expanded?: boolean }>`
   width: 100%;
-  height: ${({ $expanded }) =>
-    $expanded === "true" ? "fit-content" : "300px"};
+  height: ${({ $expanded }) => ($expanded ? "fit-content" : "300px")};
   border-radius: 15px;
   position: relative;
   display: flex;
@@ -45,10 +42,9 @@ const BackGroundContainer = styled.div<{ $expanded?: string }>`
   border: 1px solid var(--gray-100);
 `;
 
-const ImgContainer = styled.div<{ $image: string; $expanded?: string }>`
+const ImgContainer = styled.div<{ $image: string; $expanded?: boolean }>`
   width: 100%;
-  height: ${({ $expanded }) =>
-    $expanded === "true" ? "fit-content" : "300px"};
+  height: ${({ $expanded }) => ($expanded ? "fit-content" : "300px")};
   border-radius: 15px;
   position: relative;
   display: flex;
@@ -112,13 +108,27 @@ type PlayerProps = {
   musicData: Music | null;
   handleLike: (musicId: number, liked?: boolean) => void;
   handleCommentClick: () => void;
+  handleMusic: (musicId: number) => void;
+  musicList: Music[] | [];
 };
 
-const Player = ({ musicData, handleLike, handleCommentClick }: PlayerProps) => {
+const Player = ({
+  musicData,
+  handleLike,
+  handleCommentClick,
+  handleMusic,
+  musicList,
+}: PlayerProps) => {
   const [expanded, setExpanded] = useState(false);
+  const [isPlayAll, setIsPlayAll] = useState(false);
+
+  const handlePlayAllClick = () => {
+    setIsPlayAll(!isPlayAll);
+  };
 
   const handleLikeClick = (musicId: number, liked?: boolean) => {
     handleLike(musicId, liked);
+    handleMusic(musicId);
   };
 
   const handleCommentBtnClick = () => {
@@ -126,47 +136,75 @@ const Player = ({ musicData, handleLike, handleCommentClick }: PlayerProps) => {
     handleCommentClick();
   };
 
+  const handleSongEnded = () => {
+    if (isPlayAll) {
+      const currentMusicId = musicData?.musicId;
+
+      const currentIndex = musicList.findIndex(
+        (music) => music.musicId === currentMusicId
+      );
+
+      const nextMusic = musicList[currentIndex + 1];
+
+      if (nextMusic) {
+        handleMusic(nextMusic.musicId);
+      }
+    }
+  };
+
   return (
     <>
       {musicData ? (
-        <ImgContainer $image={musicData.image_url} $expanded={String(expanded)}>
-          <BackGroundContainer $expanded={String(expanded)}>
-            <PlayerContainer $expanded={String(expanded)}>
+        <ImgContainer $image={musicData.image_url} $expanded={expanded}>
+          <BackGroundContainer $expanded={expanded}>
+            <PlayerContainer $expanded={expanded}>
               <StyledPlayer>
-                <Profile image={musicData.image_url} size={250} radius={12} />
+                <Profile
+                  image={musicData.image_url}
+                  size={250}
+                  radius={12}
+                  alt={"Cover Image"}
+                />
                 <ButtonContainer>
+                  <Button onClick={handlePlayAllClick}>
+                    <Reapeat fill={isPlayAll ? "#84CBFF" : "#212121"} />
+                  </Button>
+
                   <Button
                     onClick={(event: React.MouseEvent) => {
                       event.stopPropagation();
                       handleLikeClick(musicData.musicId, musicData.liked);
                     }}
                   >
-                    {musicData.liked ? <Liked /> : <Disliked />}
+                    <Liked
+                      fill={musicData.liked ? "#FF7777" : "none"}
+                      stroke={musicData.liked ? "none" : "#212121"}
+                    />
                   </Button>
                   <Button onClick={handleCommentBtnClick}>
-                    {String(expanded) === "false" ? (
-                      <LineComment stroke="#212121" />
-                    ) : (
-                      <CommentIcon fill="#84CBFF" />
-                    )}
+                    <CommentIcon
+                      stroke={expanded ? "none" : "#212121"}
+                      fill={expanded ? "#84CBFF" : "none"}
+                    />
                   </Button>
                 </ButtonContainer>
                 <PlayInfo>
                   <MusicTitle>{musicData.title}</MusicTitle>
                   <MusicTag># {musicData.tags}</MusicTag>
-                  <CustomAudioPlayer src={musicData.music_url} />
+                  <CustomAudioPlayer
+                    src={musicData.music_url}
+                    handleSongEnded={handleSongEnded}
+                  />
                 </PlayInfo>
               </StyledPlayer>
-              {String(expanded) === "true" && (
-                <CommentSection musicId={musicData.musicId} />
-              )}
+              {expanded && <CommentSection musicId={musicData.musicId} />}
             </PlayerContainer>
           </BackGroundContainer>
         </ImgContainer>
       ) : (
         <BackGroundContainer>
           <PlayerContainer>
-            <Empty message="안녕하새오 미아내오 재생할 음악을 못찾갯어오" />
+            <Empty message={"안녕하새오 미아내오 재생할 음악을 못찾갯어오"} />
           </PlayerContainer>
         </BackGroundContainer>
       )}

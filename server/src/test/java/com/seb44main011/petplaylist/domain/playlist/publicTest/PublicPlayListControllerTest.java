@@ -19,8 +19,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
@@ -45,9 +47,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureRestDocs
 @AutoConfigureMockMvc
-@RunWith(SpringRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class PublicPlayListControllerTest extends PublicFieldDescriptor{
-    //TODO: 배포시 자꾸 에라가 나는 이슈가 있음 .. SQL연결 관련 이슈 있다가 없다가 함 ㅋㅋ 해결 해야함.
     @Autowired
     private MockMvc mockMvc;
     @MockBean
@@ -114,7 +115,7 @@ public class PublicPlayListControllerTest extends PublicFieldDescriptor{
 
         Page<Music> testPageData = TestData.ResponseData.PageNationData.getPageData(2,publicResponseList.size()+46);
 
-        given(musicService.findCategoryAndTagsPageMusic(Mockito.any(Music.Category.class),Mockito.anyString(),Mockito.anyInt())).willReturn(testPageData);
+        given(musicService.findCategoryAndTagsPageMusic(Mockito.any(Music.Category.class),Mockito.anyString(),Mockito.anyInt(),Mockito.anyString())).willReturn(testPageData);
         given(memberService.findMember(Mockito.anyLong())).willReturn(MemberTestData.MockMember.getMemberData());
         given(musicListMapper.musicListToPublicResponse(Mockito.anyList())).willReturn(publicResponseList);
 
@@ -124,6 +125,7 @@ public class PublicPlayListControllerTest extends PublicFieldDescriptor{
                                         .accept(MediaType.APPLICATION_JSON)
                                         .param("page", String.valueOf(testPageData.getNumber()+1))
                                         .param("tags",publicResponseList.get(0).getCategory())
+                                        .param("sort","view")
 
                         )
                         .andExpect(status().isOk())
@@ -139,7 +141,8 @@ public class PublicPlayListControllerTest extends PublicFieldDescriptor{
                                                         )
                                                         .requestParameters(
                                                                 parameterWithName("page").type(SimpleType.NUMBER).description("가져올 페이지 숫자"),
-                                                                parameterWithName("tags").type(SimpleType.STRING).description("조회 할 태그").optional()
+                                                                parameterWithName("tags").type(SimpleType.STRING).description("조회 할 태그").optional(),
+                                                                parameterWithName("sort").type(SimpleType.STRING).description("정렬순서 (new, old)").optional()
                                                         )
                                                         .responseFields(
                                                                 getPublicPlayListPage()
@@ -151,6 +154,44 @@ public class PublicPlayListControllerTest extends PublicFieldDescriptor{
 
 
 
+    }
+
+    @Test
+    @DisplayName("비회원의 타이틀 검색시 뮤직리스트 응답 테스트")
+    public void getSearchTitleMusicListFromNonMemberTest() throws Exception {
+        List<PlaylistDto.PublicResponse> responsesTestData = TestData.ResponseData.Public.getPublicCategoryPlayListResponseList();
+        given(musicService.findMusicListFromTitle(Mockito.anyString(),Mockito.anyInt(),Mockito.anyString())).willReturn(TestData.ResponseData.PageNationData.getPageData(1,responsesTestData.size()));
+        given(musicListMapper.musicListToPublicResponse(Mockito.anyList())).willReturn(responsesTestData);
+
+        ResultActions actions =
+                mockMvc.perform(
+                                get(PUBLIC_PLAYLIST_URL+"/search")
+                                        .accept(MediaType.APPLICATION_JSON)
+                                        .param("title","곡")
+                                        .param("page","1")
+                                        .param("sort","old")
+
+                        )
+                        .andExpect(status().isOk())
+                        .andDo(
+                                MockMvcRestDocumentationWrapper.document("타이틀 음악 리스트 검색 기능"
+                                        ,preprocessRequest(prettyPrint())
+                                        ,preprocessResponse(prettyPrint()),
+                                        resource(
+                                                ResourceSnippetParameters.builder()
+                                                        .description("비 로그인 상태 시 타이틀 음악 리스트 조회 기능 API")
+                                                        .requestParameters(
+                                                                parameterWithName("title").type(SimpleType.STRING).description("검색할 이름"),
+                                                                parameterWithName("page").type(SimpleType.STRING).description("검색할 현재 페이지").optional(),
+                                                                parameterWithName("sort").type(SimpleType.STRING).description("정렬순서 (new, old)").optional()
+                                                        )
+                                                        .responseFields(
+                                                                getPublicPlayListPage()
+                                                        )
+                                                        .build()
+                                        )
+                                )
+                        );
     }
 
 

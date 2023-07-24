@@ -1,10 +1,8 @@
 package com.seb44main011.petplaylist.domain.music.util;
 
-import javazoom.jl.decoder.Bitstream;
+
 import javazoom.jl.decoder.Header;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.InputStream;
 
 @Slf4j
 public class MP3DurationCalculator {
@@ -18,7 +16,9 @@ public class MP3DurationCalculator {
             int durationInSecondsRemaining = (int) (playTime % 60);
 
             log.info("MP3 재생 시간 {}분 {}초", durationInMinutes,durationInSecondsRemaining);
-            return durationInMinutes+":"+durationInSecondsRemaining;
+            return durationInSecondsRemaining <10 ?
+                    durationInMinutes+":0"+durationInSecondsRemaining : durationInMinutes+":"+durationInSecondsRemaining;
+
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -14,8 +14,11 @@ import com.seb44main011.petplaylist.domain.music.stub.TestData;
 import com.seb44main011.petplaylist.global.common.MultiResponseDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.junit.jupiter.api.Test;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.restdocs.AutoConfigureRestDocs;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -29,6 +32,7 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.payload.PayloadDocumentation;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -47,7 +51,8 @@ import static org.mockito.BDDMockito.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 
-
+@RunWith(SpringRunner.class)
+@ExtendWith(MockitoExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 @AutoConfigureRestDocs
@@ -93,7 +98,7 @@ class CommentControllerTest {
         //given
         CommentDto.Post post = new CommentDto.Post(1L, 1L, "댓글입니다.");
         CommentDto.Response responseComment = new CommentDto.Response(1L, 1L, 1L, "네임", "내용", "", LocalDateTime.now(), LocalDateTime.now());
-        Music music = new Music(1L, "", "", "", "", 1L, Music.Category.CATS, Music.Tags.CALM, new ArrayList<>());
+        Music music = TestData.MockMusic.getMusicData();
         musicRepository.save(music);
 
         given(commentService.saveComment(Mockito.any(CommentDto.Post.class)))
@@ -163,7 +168,7 @@ class CommentControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(context)
                 );
-        verify(commentService, times(1)).updateComment(any(CommentDto.Patch.class), anyString());
+        verify(commentService, times(1)).updateComment(any(CommentDto.Patch.class));
         actions
                 .andExpect(status().isOk())
                 .andDo(
@@ -193,7 +198,7 @@ class CommentControllerTest {
     @WithMockUser
     void deleteCommentTest() throws Exception {
         Comment commentData = CommentTestData.MockComment.getCommentData();
-        Music music = new Music(1L, "", "", "", "", 1L, Music.Category.CATS, Music.Tags.CALM, new ArrayList<>());
+        Music music = Music.builder().musicId(1L).build();
 
 
 

@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,19 +29,16 @@ public class MemberService {
         String passwordEncode = passwordEncoder.encode(member.getPassword());
         member.updatePassword(passwordEncode);
 
-
         return memberRepository.save(member);
     }
 
     public Member updateMember(long memberId, MemberDto.Patch patchMember) {
-        Member findMember = findVerifiedMember(memberId);
-        isMemberActive(findMember);
+        Member foundMember = findMember(memberId);
         Optional.ofNullable(patchMember.getName())
-                .ifPresent(findMember::updateName);
-        Optional.ofNullable(patchMember.getProfile())
-                .ifPresent(findMember::updateProfile);
+                .ifPresent(foundMember::updateName);
+        foundMember.updateProfile(findProfileEnum(patchMember.getProfileUrl()));
 
-        return memberRepository.save(findMember);
+        return memberRepository.save(foundMember);
     }
 
     public Member findByMemberFromEmail(String email) {
@@ -59,16 +58,32 @@ public class MemberService {
         return foundMember;
     }
 
+    public Member.Profile findProfileEnum(String profileUrl) {
+        for (Member.Profile profile : Member.Profile.values()) {
+            if (profile.getProfileUrl().equals(profileUrl)) return profile;
+        }
+
+        throw new BusinessLogicException(ExceptionCode.URL_NOT_FOUND);
+    }
+
     public void disableMember(long memberId, String password) {
         Member foundMember = findMember(memberId);
         boolean matchPassword = passwordEncoder.matches(password, foundMember.getPassword());
         if (matchPassword) {
             foundMember.updateStatus(Member.Status.MEMBER_QUIT);
             memberRepository.save(foundMember);
-        }
-        else {
+        } else {
             throw new BusinessLogicException(ExceptionCode.PASSWORD_MISMATCH);
         }
+    }
+
+    public List<String> findProfileImage() {
+        List<String> profileList = new ArrayList<>();
+        for (Member.Profile profile : Member.Profile.values()) {
+            profileList.add(profile.getProfileUrl());
+        }
+
+        return profileList;
     }
 
     public void verifyExistsEmail(String email) {

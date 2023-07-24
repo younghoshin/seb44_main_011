@@ -1,6 +1,5 @@
 import { styled } from "styled-components";
 import Profile from "./commons/Profile";
-import testImg from "../assets/imgs/testimg.jpg";
 import { calculateTimeAgo } from "../utils/calculateTimeAgo";
 import { ReactComponent as EditIcon } from "../assets/icons/editicon.svg";
 import { ReactComponent as DeleteIcon } from "../assets/icons/deleteicon.svg";
@@ -9,7 +8,8 @@ import Pagination from "./Pagination";
 import { useState, useEffect, useRef } from "react";
 import { CommentData } from "../types/Comment";
 import Empty from "./Empty";
-import axios from "axios";
+import { api } from "../utils/Url";
+import saveNewToken from "../utils/saveNewToken";
 
 const CommentListContainer = styled.div`
   border-radius: 15px;
@@ -28,7 +28,7 @@ const CommentContainer = styled.div`
   flex-direction: column;
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: 15px;
-  margin: 30px;
+  margin: 10px 30px 2%;
 `;
 
 const CommentForm = styled.form`
@@ -86,6 +86,10 @@ const UserName = styled.span`
   flex-shrink: 0;
 `;
 
+const Time = styled.span`
+  flex-shrink: 0;
+`;
+
 const ButtonContainer = styled.div`
   row-gap: 8px;
   display: flex;
@@ -137,7 +141,7 @@ const CommentSection = ({ musicId }: CommentSectionProps) => {
   const [isInputActive, setIsInputActive] = useState(false);
   const [isCommentChanged, setIsCommentChanged] = useState(false);
   const [editCommentId, setEditCommentId] = useState<number | null>(null);
-  // const [editComment, setEditComment] = useState("");
+  const [editComment, setEditComment] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const commentData: CommentData = useCommentData({
     musicId,
@@ -163,35 +167,71 @@ const CommentSection = ({ musicId }: CommentSectionProps) => {
     setCommentInput(event.target.value);
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
+  const handleEditSubmit = async (
+    event: React.FormEvent,
+    commentId: number
+  ) => {
     event.preventDefault();
 
-    if (commentInput.length < 2 || commentInput.length > 30) {
+    const comment = editComment;
+
+    if (comment.length < 2 || comment.length > 30) {
       alert("댓글은 2글자 이상 30글자 이하여야 합니다.");
       return;
     }
 
     const requestData = {
-      memberId: localStorage.getItem("memberId"),
-      musicId: musicId,
-      comment: commentInput,
+      commentId: commentId,
+      comment: comment,
     };
 
-    const accessToken = localStorage.getItem("accessToken");
+    try {
+      const response = await api.patch(
+        `musics/${musicId}/comments/${commentId}`,
+        requestData
+      );
+
+      const accessToken = response.headers["authorization"] || null;
+      saveNewToken(accessToken);
+
+      if (response.status === 200) {
+        setEditCommentId(null);
+        setIsCommentChanged(true);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("댓글 수정에 실패했습니다.");
+    }
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const comment = commentInput;
+
+    if (comment.length < 2 || comment.length > 30) {
+      alert("댓글은 2글자 이상 30글자 이하여야 합니다.");
+      return;
+    }
+
+    const requestData = {
+      memberId: memberId,
+      musicId: musicId,
+      comment: comment,
+    };
 
     try {
-      const response = await axios.post(
-        `http://ec2-3-35-216-90.ap-northeast-2.compute.amazonaws.com:8080/api/musics/${musicId}/comments`,
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
+      const response = await api.post(
+        `musics/${musicId}/comments`,
+        requestData
       );
-      console.log(response.data);
+
       setCommentInput("");
       setIsInputActive(false);
+
+      const accessToken = response.headers["authorization"] || null;
+      saveNewToken(accessToken);
+
       if (response.status === 201) {
         setIsCommentChanged(true);
       }
@@ -209,19 +249,48 @@ const CommentSection = ({ musicId }: CommentSectionProps) => {
     setIsInputActive(false);
   };
 
-  const handleEdit = (commentId: number) => {
+  const handleEdit = (commentId: number, comment: string) => {
     setEditCommentId(commentId);
+    setEditComment(comment);
   };
 
   const handleEditCancel = () => {
     setEditCommentId(null);
   };
 
+  const handleEditChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEditComment(event.target.value);
+  };
+
+  const handleDelete = async (event: React.MouseEvent, commentId: number) => {
+    event.stopPropagation();
+
+    const confirmed = window.confirm("댓글을 삭제하시겠습니까?");
+
+    if (confirmed) {
+      try {
+        const response = await api.delete(
+          `musics/${musicId}/comments/${commentId}`
+        );
+
+        const accessToken = response.headers["authorization"] || null;
+        saveNewToken(accessToken);
+
+        if (response.status === 200) {
+          setIsCommentChanged(true);
+        }
+      } catch (error) {
+        console.error(error);
+        alert("댓글 삭제에 실패했습니다.");
+      }
+    }
+  };
+
   useEffect(() => {
-    if (isInputActive && inputRef.current) {
+    if ((editCommentId || isInputActive) && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isInputActive]);
+  }, [isInputActive, editCommentId]);
 
   useEffect(() => {
     setIsCommentChanged(false);
@@ -251,20 +320,30 @@ const CommentSection = ({ musicId }: CommentSectionProps) => {
         </CommentForm>
         {commentData?.data.length > 0 ? (
           commentData?.data.map((comment) => (
-            <CommentList key={comment.commentId}>
-              <Profile image={testImg} size={40} radius={4} />
+            <CommentList
+              key={comment.commentId}
+              onSubmit={(event: React.FormEvent) =>
+                handleEditSubmit(event, comment.commentId)
+              }
+            >
+              <Profile image={comment.profile} size={40} radius={4} />
               <ListContent>
                 <UserName>{comment.name}</UserName>
                 <span>:</span>
                 {editCommentId === comment.commentId ? (
-                  <EditInput type="text" defaultValue={comment.comment} />
+                  <EditInput
+                    ref={inputRef}
+                    type="text"
+                    defaultValue={comment.comment}
+                    onChange={handleEditChange}
+                  />
                 ) : (
                   <span>{comment.comment}</span>
                 )}
               </ListContent>
               {editCommentId === comment.commentId ? (
                 <ButtonContainer>
-                  <WriteBtn type="button">수정완료</WriteBtn>
+                  <WriteBtn type="submit">수정완료</WriteBtn>
                   <WriteBtn type="button" onClick={() => handleEditCancel()}>
                     수정취소
                   </WriteBtn>
@@ -273,14 +352,23 @@ const CommentSection = ({ musicId }: CommentSectionProps) => {
                 Number(memberId) === comment.memberId && (
                   <>
                     <ButtonContainer>
-                      <IconBtn onClick={() => handleEdit(comment.commentId)}>
-                        <EditIcon fill="#F5F6F6" />
+                      <IconBtn
+                        onClick={() =>
+                          handleEdit(comment.commentId, comment.comment)
+                        }
+                      >
+                        <EditIcon type="button" fill="#F5F6F6" />
                       </IconBtn>
-                      <IconBtn>
-                        <DeleteIcon fill="#F5F6F6" />
+                      <IconBtn type="button">
+                        <DeleteIcon
+                          fill="#F5F6F6"
+                          onClick={(event: React.MouseEvent) =>
+                            handleDelete(event, comment.commentId)
+                          }
+                        />
                       </IconBtn>
                     </ButtonContainer>
-                    <span>{calculateTimeAgo(comment.createdAt)}</span>
+                    <Time>{calculateTimeAgo(comment.createdAt)}</Time>
                   </>
                 )
               )}
