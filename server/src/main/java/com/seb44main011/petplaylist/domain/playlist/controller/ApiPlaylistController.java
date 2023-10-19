@@ -12,7 +12,7 @@ import com.seb44main011.petplaylist.domain.playlist.service.MusicListService;
 import com.seb44main011.petplaylist.global.common.AuthenticationName;
 import com.seb44main011.petplaylist.global.common.MultiResponseDto;
 //import com.seb44main011.petplaylist.global.stubData.StubData;
-import com.seb44main011.petplaylist.global.utils.UriCreator;
+import com.seb44main011.petplaylist.global.utils.uri.UriCreator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
