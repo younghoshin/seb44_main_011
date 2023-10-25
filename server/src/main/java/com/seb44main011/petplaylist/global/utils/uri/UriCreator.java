@@ -1,4 +1,4 @@
-package com.seb44main011.petplaylist.global.utils;
+package com.seb44main011.petplaylist.global.utils.uri;
 
 import org.springframework.web.util.UriComponentsBuilder;
 

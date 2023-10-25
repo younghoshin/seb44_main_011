@@ -1,4 +1,4 @@
-package com.seb44main011.petplaylist.domain.music.config;
+package com.seb44main011.petplaylist.global.storage.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

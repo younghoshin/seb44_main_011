@@ -9,10 +9,13 @@ import com.seb44main011.petplaylist.domain.music.util.ByteArrayInputStreamUtil;
 import com.seb44main011.petplaylist.domain.music.util.MP3DurationCalculator;
 import com.seb44main011.petplaylist.global.error.BusinessLogicException;
 import com.seb44main011.petplaylist.global.error.ExceptionCode;
+import com.seb44main011.petplaylist.global.storage.service.StorageService;
 import javazoom.jl.decoder.Bitstream;
 import javazoom.jl.decoder.BitstreamException;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,31 +26,28 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-import static com.seb44main011.petplaylist.domain.music.constant.StorageConstants.BUCKET_MUSIC_PATH;
-import static com.seb44main011.petplaylist.domain.music.constant.StorageConstants.BUCKET_IMG_PATH;
-import static com.seb44main011.petplaylist.domain.music.constant.StorageConstants.MUSIC_FILE_TYPE;
+import static com.seb44main011.petplaylist.global.storage.constant.StorageConstants.*;
 
 
-@Service
 @Transactional
-public class S3Service extends ByteArrayInputStreamUtil implements StorageService<Music,List<MultipartFile>>{
+@Service
+public class MusicS3Service extends ByteArrayInputStreamUtil implements StorageService<Music> {
 
 
     private final AmazonS3 amazonS3Client;
-
     @Value("${cloud.aws.s3.dns}")
-    private  String S3_SERVER_DNS;
+    public String S3_SERVER_DNS;
     @Value("${cloud.aws.s3.bucket}")
-    private  String bucket;
+    public  String bucket;
     @Value("${cloud.aws.s3.disable-path}")
-    private  String disablePath;
+    public  String disablePath;
     @Value("${cloud.aws.s3.enable-path}")
-    private  String enablePath;
+    public  String enablePath;
 
     private String EXT;
 
 
-    public S3Service(AmazonS3 amazonS3Client) {
+    public MusicS3Service(AmazonS3 amazonS3Client) {
         this.amazonS3Client = amazonS3Client;
     }
 

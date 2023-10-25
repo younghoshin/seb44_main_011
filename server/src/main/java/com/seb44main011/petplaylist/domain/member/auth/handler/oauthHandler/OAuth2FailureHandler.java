@@ -53,11 +53,10 @@ public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
         MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
         queryParams.add("error_message", exception.getMessage());
 
-        return UriComponentsBuilder // 로컬 테스트용
+        return UriComponentsBuilder
                 .newInstance()
-                .scheme("http")
-                .host("localhost")
-                .port(5173)
+                .scheme("https")
+                .host("on.petpil.site")
                 .path("/oauth")
                 .queryParams(queryParams)
                 .build()

@@ -587,6 +587,31 @@
         }
       }
     },
+    "/api/members/my-page/profiles" : {
+      "get" : {
+        "tags" : [ "api" ],
+        "summary" : "프로필 이미지",
+        "description" : "프로필 이미지",
+        "operationId" : "프로필 이미지 리스트 조회 예제",
+        "responses" : {
+          "200" : {
+            "description" : "200",
+            "content" : {
+              "application/json;charset=UTF-8" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/api-members-my-page-profiles-962196321"
+                },
+                "examples" : {
+                  "프로필 이미지 리스트 조회 예제" : {
+                    "value" : "[ \"https://main-project-file.s3.ap-northeast-2.amazonaws.com/profile/dogs/dog1.jpg\", \"https://main-project-file.s3.ap-northeast-2.amazonaws.com/profile/dogs/dog2.jpg\", \"https://main-project-file.s3.ap-northeast-2.amazonaws.com/profile/dogs/dog3.jpg\", \"https://main-project-file.s3.ap-northeast-2.amazonaws.com/profile/dogs/dog4.jpg\", \"https://main-project-file.s3.ap-northeast-2.amazonaws.com/profile/cats/cat1.png\", \"https://main-project-file.s3.ap-northeast-2.amazonaws.com/profile/cats/cat2.png\", \"https://main-project-file.s3.ap-northeast-2.amazonaws.com/profile/cats/cat3.jpg\", \"https://main-project-file.s3.ap-northeast-2.amazonaws.com/profile/cats/cat4.jpg\" ]"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/members/my-page/{member-id}" : {
       "get" : {
         "tags" : [ "api" ],
@@ -642,7 +667,7 @@
               },
               "examples" : {
                 "회원정보 수정 테스트" : {
-                  "value" : "{\n  \"name\" : \"내가진짜홍길동\",\n  \"profileUrl\" : \"url-1\"\n}"
+                  "value" : "{\n  \"name\" : \"내가진짜홍길동\",\n  \"profileUrl\" : \"url-2\"\n}"
                 }
               }
             }
@@ -658,7 +683,7 @@
                 },
                 "examples" : {
                   "회원정보 수정 테스트" : {
-                    "value" : "{\n  \"email\" : \"hgd@gmail.com\",\n  \"name\" : \"내가진짜홍길동\",\n  \"profileUrl\" : \"수정된 프로필 이미지\"\n}"
+                    "value" : "{\n  \"email\" : \"hgd@gmail.com\",\n  \"name\" : \"내가진짜홍길동\",\n  \"profileUrl\" : \"url-2\"\n}"
                   }
                 }
               }
@@ -706,7 +731,7 @@
                 },
                 "examples" : {
                   "인증된 사용자의 댓글 작성" : {
-                    "value" : "{\n  \"commentId\" : 1,\n  \"memberId\" : 1,\n  \"musicId\" : 1,\n  \"name\" : \"네임\",\n  \"comment\" : \"내용\",\n  \"profile\" : \"\",\n  \"createdAt\" : \"2023-07-23T11:27:31.49342\",\n  \"modifiedAt\" : \"2023-07-23T11:27:31.493439\"\n}"
+                    "value" : "{\n  \"commentId\" : 1,\n  \"memberId\" : 1,\n  \"musicId\" : 1,\n  \"name\" : \"네임\",\n  \"comment\" : \"내용\",\n  \"profile\" : \"\",\n  \"createdAt\" : \"2023-10-19T15:13:58.221033\",\n  \"modifiedAt\" : \"2023-10-19T15:13:58.22105\"\n}"
                   }
                 }
               }
@@ -1137,7 +1162,7 @@
                 },
                 "examples" : {
                   "해당 곡의 전체 댓글조회" : {
-                    "value" : "{\n  \"data\" : [ {\n    \"commentId\" : 1,\n    \"memberId\" : 1,\n    \"musicId\" : 1,\n    \"name\" : \"네임\",\n    \"comment\" : \"내용\",\n    \"profile\" : \"\",\n    \"createdAt\" : \"2023-07-23T11:27:31.593193\",\n    \"modifiedAt\" : \"2023-07-23T11:27:31.5932\"\n  } ],\n  \"pageInfo\" : {\n    \"page\" : 1,\n    \"size\" : 6,\n    \"totalElements\" : 6,\n    \"totalPages\" : 1\n  }\n}"
+                    "value" : "{\n  \"data\" : [ {\n    \"commentId\" : 1,\n    \"memberId\" : 1,\n    \"musicId\" : 1,\n    \"name\" : \"네임\",\n    \"comment\" : \"내용\",\n    \"profile\" : \"\",\n    \"createdAt\" : \"2023-10-19T15:13:58.381882\",\n    \"modifiedAt\" : \"2023-10-19T15:13:58.381892\"\n  } ],\n  \"pageInfo\" : {\n    \"page\" : 1,\n    \"size\" : 6,\n    \"totalElements\" : 6,\n    \"totalPages\" : 1\n  }\n}"
                   }
                 }
               }
@@ -1668,6 +1693,21 @@
             },
             "description" : "페이징 정보"
           }
+        }
+      },
+      "api-members-my-page-profiles-962196321" : {
+        "type" : "array",
+        "description" : "프로필 이미지 리스트",
+        "items" : {
+          "oneOf" : [ {
+            "type" : "object"
+          }, {
+            "type" : "boolean"
+          }, {
+            "type" : "string"
+          }, {
+            "type" : "number"
+          } ]
         }
       },
       "public-musics1039852064" : {

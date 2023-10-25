@@ -4,10 +4,10 @@ import com.seb44main011.petplaylist.domain.music.dto.MusicDto;
 import com.seb44main011.petplaylist.domain.music.entity.Music;
 import com.seb44main011.petplaylist.domain.music.mapper.MusicMapper;
 import com.seb44main011.petplaylist.domain.music.repository.MusicRepository;
-import com.seb44main011.petplaylist.domain.music.service.storageService.S3Service;
 import com.seb44main011.petplaylist.global.error.BusinessLogicException;
 import com.seb44main011.petplaylist.global.error.ExceptionCode;
-import com.seb44main011.petplaylist.global.utils.PageNationCreator;
+import com.seb44main011.petplaylist.global.utils.pageNation.PageNationCreator;
+import com.seb44main011.petplaylist.global.storage.service.S3Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
@@ -37,6 +37,15 @@ public class MusicService  {
         storageService.saveUploadFile(files,newMusic);
         return saveMusic(newMusic);
     }
+    public void deleteMusicFile(long musicId) {
+        Music activeMusic = findMusicAnyStatus(musicId);
+        convertMusicStatusByInActive(activeMusic);
+
+    }
+    public void revertMusicFile(long musicId){
+        Music disableMusic = findMusicAnyStatus(musicId);
+        convertMusicStatusByActive(disableMusic);
+    }
 
     public Music serchMusic(String musicTitle){
         Music findMusic= findMusic(musicTitle);
@@ -50,16 +59,6 @@ public class MusicService  {
         return repository.save(findMusic);
     }
 
-    public void deleteMusicFile(long musicId) {
-        Music activeMusic = findMusicAnyStatus(musicId);
-        convertMusicStatusByInActive(activeMusic);
-
-    }
-
-    public void revertMusicFile(long musicId){
-        Music disableMusic = findMusicAnyStatus(musicId);
-        convertMusicStatusByActive(disableMusic);
-    }
     public Music findMusicAnyStatus(long musicId) {
         return repository.findById(musicId).orElseThrow(
                 () -> new BusinessLogicException(ExceptionCode.MUSIC_NOT_FOUND)

@@ -5,7 +5,7 @@ import com.seb44main011.petplaylist.domain.music.entity.Music;
 import com.seb44main011.petplaylist.domain.music.mapper.MusicMapper;
 import com.seb44main011.petplaylist.domain.music.service.mainService.MusicService;
 import com.seb44main011.petplaylist.global.common.AuthenticationName;
-import com.seb44main011.petplaylist.global.utils.UriCreator;
+import com.seb44main011.petplaylist.global.utils.uri.UriCreator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;

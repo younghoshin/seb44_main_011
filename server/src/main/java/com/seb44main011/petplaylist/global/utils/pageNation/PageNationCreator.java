@@ -1,4 +1,4 @@
-package com.seb44main011.petplaylist.global.utils;
+package com.seb44main011.petplaylist.global.utils.pageNation;
 
 import org.springframework.data.domain.*;
 

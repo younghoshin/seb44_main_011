@@ -9,7 +9,7 @@ import com.seb44main011.petplaylist.domain.member.entity.Member;
 import com.seb44main011.petplaylist.domain.member.mapper.MemberMapper;
 import com.seb44main011.petplaylist.domain.member.service.MemberService;
 import com.seb44main011.petplaylist.domain.member.stub.MemberTestData;
-import com.seb44main011.petplaylist.domain.music.service.storageService.S3Service;
+import com.seb44main011.petplaylist.domain.music.service.storageService.MusicS3Service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,10 +24,8 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.mockmvc.MockMvcRestDocumentation;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.operation.preprocess.Preprocessors;
-import org.springframework.restdocs.payload.FieldDescriptor;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.restdocs.payload.PayloadDocumentation;
-import org.springframework.security.access.method.P;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -47,7 +45,7 @@ public class MemberControllerTest {
     @MockBean
     private MemberMapper memberMapper;
     @MockBean
-    private S3Service s3service;
+    private MusicS3Service musicS3Service;
     private Member testMember;
     private String memberContext;
 
